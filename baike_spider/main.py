@@ -1,6 +1,6 @@
 
 # coding: utf-8
-import Spider
+from spider import Spider
 
 if __name__ == '__main__':
     root_url = "https://baike.baidu.com/item/Python"
