@@ -3,8 +3,9 @@
 # import urllib.request
 from urllib import request, parse
 import ssl
+import json
 
-if __name__ == '__main__':
+def test_01():
     '''
     urlopen 默认是get请求
     '''
@@ -34,5 +35,34 @@ if __name__ == '__main__':
 
     res = request.urlopen(req, context=context)
     print(res.read().decode('utf-8'))
+
+def test_youdao_fanyi():
+    url = 'http://fanyi.youdao.com/translate?smartresult=dict&smartresult=rule'
+    req_dic = {
+        'i': 'good',
+        'from': 'AUTO',
+        'to': 'AUTO',
+        'smartresult': 'dict',
+        # 'client': 'fanyideskweb',
+        # 'salt': '15915377358111',
+        # 'sign': '713e946898801bf00899cc022f4b9f06',
+        # 'ts': '1591537735811',
+        # 'bv': '8eacceba9bc5a83cd753ea39c036a591',
+        'doctype': 'json',
+        'version': '2.1',
+        'keyfrom': 'fanyi.web',
+        'action': 'FY_BY_REALTlME'
+    }
+    req_dic_data = parse.urlencode(req_dic).encode('utf-8')
+    res = request.urlopen(url, req_dic_data)
+    result_json = res.read().decode('utf-8')
+    result_json = json.loads(result_json)
+    print(result_json)
+    # print(result_json)
+    print('结果')
+    print(result_json['translateResult'][0][0]['src'] + '->' + result_json['translateResult'][0][0]['tgt'])
+
+if __name__ == '__main__':
+    test_youdao_fanyi()
 
 
