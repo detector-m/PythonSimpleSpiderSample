@@ -1,9 +1,12 @@
 # -*- coding: utf-8 *-
 
 # import urllib.request
+import os
 from urllib import request, parse, error
 import ssl
 import json
+
+from http import cookiejar
 
 def test_01():
     '''
@@ -61,6 +64,7 @@ def test_youdao_fanyi():
     # print(result_json)
     print('结果')
     print(result_json['translateResult'][0][0]['src'] + '->' + result_json['translateResult'][0][0]['tgt'])
+
 
 def test_urllib_error_01():
     context = ssl._create_unverified_context()
@@ -120,10 +124,59 @@ def test_urllib_proxy():
     print(html)
 
 
+'''
+cookie 测试
+'''
+def test_cookie_01():
+    # 声明一个CookieJar对象来保存cookie
+    cookie = cookiejar.CookieJar()
+    # 利用urllib.request库的HTTPCookieProcessor对象来创建cookie处理器既是CookieHandler
+    cookie_handler = request.HTTPCookieProcessor(cookie)
+    # 通过CookieHandler创建opener
+    opener = request.build_opener(cookie_handler)
+    # 此处的open方法打开网页
+    res = opener.open('http://wwww.baidu.com')
+    # print(res.read().decode('utf-8'))
+
+    for item in cookie:
+        print('name = {}, value = {}'.format(item.name, item.value))
+
+def test_cookie_write_to_file():
+    cookie_path = os.path.join(os.path.dirname(__file__), 'cookie.txt')
+    # 声明一个MozillaCookieJar对象来存cookie，之后写入文件
+    cookie = cookiejar.MozillaCookieJar(cookie_path)
+    # 利用urllib.request库的HTTPCookieProcessor对象来创建cookie处理器既是CookieHandler
+    cookie_handler = request.HTTPCookieProcessor(cookie)
+    # 通过CookieHandler创建opener
+    opener = request.build_opener(cookie_handler)
+    # 此处的open方法打开网页
+    res = opener.open('http://wwww.baidu.com')
+    # 保存cookie到文件
+    # ignore_discard的意思是即使cookies将被丢弃也将它保存下来；ignore_expires的意思是如果在该文件中cookies已经存在，则覆盖原文件写入。
+    cookie.save(ignore_discard=True, ignore_expires=True)
+
+def test_cookie_load_from_file():
+    cookie_path = os.path.join(os.path.dirname(__file__), 'cookie.txt')
+    # 声明一个MozillaCookieJar对象来存cookie
+    cookie = cookiejar.MozillaCookieJar()
+    # 从文件中读取cookie内容到变量
+    # ignore_discard的意思是即使cookies将被丢弃也将它保存下来；ignore_expires的意思是如果在该文件中cookies已经存在，则覆盖原文件写入。
+    cookie.load(cookie_path, ignore_discard=True, ignore_expires=True)
+    # 利用urllib.request库的HTTPCookieProcessor对象来创建cookie处理器既是CookieHandler
+    cookie_handler = request.HTTPCookieProcessor(cookie)
+    # 通过CookieHandler创建opener
+    opener = request.build_opener(cookie_handler)
+    # 此处的open方法打开网页
+    _ = opener.open('http://wwww.baidu.com')
+    # print(res.read().decode('utf-8'))
+
 if __name__ == '__main__':
     # test_01()
     # test_youdao_fanyi()
     # test_urllib_error_01()
-    test_urllib_proxy()
+    # test_urllib_proxy()
+    # test_cookie_01()
+    # test_cookie_write_to_file()
+    test_cookie_load_from_file()
 
 
