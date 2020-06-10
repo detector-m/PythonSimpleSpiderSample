@@ -8,6 +8,7 @@ _thread没什么人用
 
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def threading_action_01(para='test_01_thread_01', sleep=3):
     time.sleep(sleep)
@@ -67,6 +68,25 @@ def test_threading_02(name, sleep=1, count=10):
 
     print('退出主线程')
 
+def test_threading_thread_pool():
+    thread_01 = TestThread(1, 'thread')
+    pool = ThreadPoolExecutor(10)
+    task = []
+    for i in range(1, 5):
+        fn = pool.submit(thread_01.threading_action_02, [f'pool__0{i}'])
+        task.append(fn)
+    # as_completed方法一次取出所有任务的结果。as_completed()方法是一个生成器，
+    # 在没有任务完成的时候，会阻塞，在有某个任务完成的时候，会yield这个任务，
+    # 就能执行for循环下面的语句，然后继续阻塞住，循环到所有的任务结束。
+    # 从结果也可以看出，先完成的任务会先通知主线程。
+    for future in as_completed(task):
+        data = future.result()
+        print("in main: get page {}s success".format(data))
+
+    print('退出主线程')
+
 if __name__ == '__main__':
     # test_threading_01('test_threading_01')
-    test_threading_02('test_threading_02')
+    # test_threading_02('test_threading_02')
+    test_threading_thread_pool()
+    
