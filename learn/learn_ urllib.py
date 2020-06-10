@@ -2,7 +2,7 @@
 
 # import urllib.request
 import os
-from urllib import request, parse
+from urllib import request, parse, error
 import ssl
 import json
 
@@ -65,6 +65,65 @@ def test_youdao_fanyi():
     print('结果')
     print(result_json['translateResult'][0][0]['src'] + '->' + result_json['translateResult'][0][0]['tgt'])
 
+
+def test_urllib_error_01():
+    context = ssl._create_unverified_context()
+
+    # URLError
+    # url = 'http://www.iloveyou.com/'
+    # HTTPError
+    url = 'http://www.douyu.com/Jack_Cui.html'
+    req = request.Request(url)
+    try:
+        res = request.urlopen(req, context=context)
+    except error.HTTPError as e:
+        print(e.code)
+    except error.URLError as e:
+        print(e.reason)
+
+def test_urllib_error_02():
+    context = ssl._create_unverified_context()
+
+    # URLError
+    # url = 'http://www.iloveyou.com/'
+    # HTTPError
+    url = 'http://www.douyu.com/Jack_Cui.html'
+    req = request.Request(url)
+    try:
+        res = request.urlopen(req, context=context)
+    except error.HTTPError as e:
+        if hasattr(e, 'code'):
+            print('HTTPError')
+            print(e.code)
+        elif hasattr(e, 'reason'):
+            print('URLError')
+            print(e.reason)
+
+def test_urllib_proxy():
+    '''
+    使用install_opener方法之后，会将程序默认的urlopen方法替换掉。也就是说，如果使用install_opener之后，在该文件中，再次调用urlopen会使用自己创建好的opener。如果不想替换掉，只是想临时使用一下，可以使用opener.open(url)，这样就不会对程序默认的urlopen有影响。
+    '''
+    # 163.125.16.6	8888
+    url = 'http://www.whatismyip.com.tw/'
+    # 代理ip
+    proxy = {
+        # 'http': '223.247.93.1:4216',
+        'http': '61.145.48.38:4216'
+    }
+    # 创建ProxyHandler
+    proxy_handler = request.ProxyHandler(proxy)
+    # 创建Opener
+    opener = request.build_opener(proxy_handler)
+    # 添加User Angent
+    opener.addheaders = [('User-Agent','Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36')]
+    # 安装Opener
+    request.install_opener(opener)
+    # 使用自己安装好的Opener
+    res = request.urlopen(url)
+    html = res.read().decode('utf-8')
+    print(html)
+
+
 '''
 cookie 测试
 '''
@@ -108,11 +167,14 @@ def test_cookie_load_from_file():
     # 通过CookieHandler创建opener
     opener = request.build_opener(cookie_handler)
     # 此处的open方法打开网页
-    res = opener.open('http://wwww.baidu.com')
+    _ = opener.open('http://wwww.baidu.com')
     # print(res.read().decode('utf-8'))
 
 if __name__ == '__main__':
+    # test_01()
     # test_youdao_fanyi()
+    # test_urllib_error_01()
+    # test_urllib_proxy()
     # test_cookie_01()
     # test_cookie_write_to_file()
     test_cookie_load_from_file()
