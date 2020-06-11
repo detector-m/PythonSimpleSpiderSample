@@ -1,7 +1,7 @@
 # -*- coding: utf-8 *-
 
 from urllib import request, parse
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, element
 import re
 import sys, os, ssl
 
@@ -31,7 +31,9 @@ def start_crawl_01():
 def start_crawl():
     url = 'https://www.biqukan.com/1_1094/'
     table_of_contents_url = crawl_table_of_contents(url)
-    print(table_of_contents_url)
+    chapter_content = crawl_chapter_content(table_of_contents_url[0])
+    print(chapter_content)
+
 '''
 爬取某一小说的各个章节的目录，根据URL
 '''
@@ -46,12 +48,40 @@ def crawl_table_of_contents(story_url) -> []:
     dd_a_tags = dl_tag.find_all('a')
     dd_a_tags.pop(0)
     parse_url = parse.urlparse(story_url)
-    root_url = parse_url.scheme +'//'+parse_url.hostname
+    root_url = parse_url.scheme +'://'+parse_url.hostname
     for tmp_a in dd_a_tags:
-        table_urls.append(root_url + tmp_a.get('href'))
+        table_urls.append({
+            'name': tmp_a.string,
+            'url': root_url + tmp_a.get('href')
+        })
 
     return table_urls
 
+'''
+爬取某一章的内容
+'''
+def crawl_chapter_content(chapter: dict):
+    soup = _get_soup(chapter['url'])
+    content_tag = soup.find('div', id='content')
+    flag_tags = content_tag.find_all('script')
+    flag_tag_index_s = content_tag.contents.index(flag_tags[0]) 
+    content_contents = content_tag.contents[flag_tag_index_s+1 : len(content_tag.contents)]
+    flag_tag_index_e = content_contents.index(flag_tags[1]) 
+    content_contents = content_contents[0 : flag_tag_index_e-1]
+    text_contents = []
+    for tag in content_contents:
+        if type(tag) == element.Tag:
+            continue
+        if tag.string == ' ':
+            continue
+        
+        text = tag.string.replace('\xa0','')
+        text = text.replace('\r', '\r\n')
+        text_contents.append(text)
+    # content_tag.contents = content_contents
+
+    chapter_content = ''.join(text_contents)
+    return chapter_content
 
 def _get_soup(target_url):
     # User_Agent
