@@ -31,8 +31,13 @@ def start_crawl_01():
 def start_crawl():
     url = 'https://www.biqukan.com/1_1094/'
     table_of_contents_url = crawl_table_of_contents(url)
-    chapter_content = crawl_chapter_content(table_of_contents_url[0])
-    print(chapter_content)
+    # COUNT_MAX: int = len(table_of_contents_url)
+    COUNT_MAX: int = 2
+    for i, value in enumerate(table_of_contents_url):
+        if (i == COUNT_MAX):
+            break
+        chapter_content = crawl_chapter_content(value)
+        print(chapter_content)
 
 '''
 爬取某一小说的各个章节的目录，根据URL
